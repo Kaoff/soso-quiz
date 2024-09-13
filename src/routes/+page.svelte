@@ -117,7 +117,7 @@
     }
 </script>
 
-<div class="flex flex-col items-center text-2xl w-1/2">
+<div class="flex flex-col items-center text-2xl xl:w-2/3 w-11/12">
 	{timeString}
 	<div class="bg-gray-100 rounded-full h-2 w-full mt-2">
 		<div
