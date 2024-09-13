@@ -102,6 +102,7 @@
 
     function addPlayer() {
         const playerName = document.querySelector<HTMLInputElement>('input[name="playerName"]')?.value;
+        document.querySelector<HTMLInputElement>('input[name="playerName"]')!.value = '';
 
         if (!playerName) return;
 
@@ -153,9 +154,9 @@
 	>
 		{timerStopped ? "Start question" : "Stop question"}
 	</button>
-    <div class="mt-8 w-full grid grid-cols-5">
+    <div class="mt-8 w-full grid grid-cols-3">
         {#each players as player}
-        <div class="flex flex-col items-center border border-2 w-fit p-4 rounded-md">
+        <div class="flex flex-col items-center border border-2 w-fit p-4 rounded-md w-full overflow-hidden">
             <div>{player.name}</div>
             <div class="mt-4">
                 <button class="bg-red-600 py-2 px-4 rounded-md" onclick={() => player.score -= 1}>-</button>
