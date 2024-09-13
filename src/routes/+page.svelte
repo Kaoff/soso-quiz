@@ -11,6 +11,7 @@
 	let lastTime: DOMHighResTimeStamp;
 	let timeString = $state('30s');
 	let timerStopped = $state(true);
+    let players: { name: string; score: number }[] = $state([]);
 
     let question = $state('Question');
     let difficulty = $state('easy');
@@ -21,9 +22,12 @@
     let { data } = $props();
 
     onMount(() => {
+        if (browser) {
+            players = localStorage.getItem('players') ? JSON.parse(localStorage.getItem('players') || '') : []
+        }
+
         timer = setInterval(() => {
             requestTimeInSec -= 1;
-            console.log(requestTimeInSec);
 
             if (requestTimeInSec <= 0) {
                 canRequest = true;
@@ -41,7 +45,6 @@
             const randomDifficulty = Math.random() > 0.5 ? 'easy' : 'medium';
             const response = await fetch(`https://opentdb.com/api.php?amount=1&encode=base64&difficulty=${randomDifficulty}${selectedCategory ? `&category=${selectedCategory}` : ''}`);
             const data = await response.json();
-            const parse = (text: string) => new DOMParser().parseFromString(text, 'text/html').body.textContent;
             difficulty = randomDifficulty;
             question = atob(data.results[0].question);
             answers = data.results[0].incorrect_answers.map((text: string) => ({ text: atob(text) })).concat({ text: atob(data.results[0].correct_answer), correct: true });
@@ -74,6 +77,10 @@
 		lastTime = time;
 	};
 
+    $effect(() => {
+        localStorage.setItem('players', JSON.stringify(players));
+    });
+
 	onDestroy(() => {
         if (!browser) return;
 		cancelAnimationFrame(frame);
@@ -92,6 +99,18 @@
             cancelAnimationFrame(frame);
         }
 	}
+
+    function addPlayer() {
+        const playerName = document.querySelector<HTMLInputElement>('input[name="playerName"]')?.value;
+
+        if (!playerName) return;
+
+        players.push({ name: playerName, score: 0 });
+    }
+
+    function clearPlayers() {
+        players = [];
+    }
 
     function nthLetter(n: number) {
         return String.fromCharCode(65 + n);
@@ -134,4 +153,21 @@
 	>
 		{timerStopped ? "Start question" : "Stop question"}
 	</button>
+    <div class="mt-8 w-full grid grid-cols-5">
+        {#each players as player}
+        <div class="flex flex-col items-center border border-2 w-fit p-4 rounded-md">
+            <div>{player.name}</div>
+            <div class="mt-4">
+                <button class="bg-red-600 py-2 px-4 rounded-md" onclick={() => player.score -= 1}>-</button>
+                <span class="mx-2">{player.score}</span>
+                <button class="bg-green-600 py-2 px-4 rounded-md" onclick={() => player.score += 1}>+</button>
+            </div>
+        </div>
+        {/each}
+    </div>
+    <div class="flex gap-4 items-center mt-10 w-full">
+        <input data-dashlane-disabled-on-field="true" name="playerName" type="text" class="bg-slate-900 w-full rounded-md py-2 px-2" placeholder="Player name" />
+        <button class="bg-blue-600 w-full py-2 rounded-md basis-1/3 disabled:opacity-50" onclick={addPlayer}>Add</button>
+    </div>
+    <button class="bg-red-600 w-full py-2 mt-4 rounded-md disabled:opacity-50" onclick={clearPlayers}>Clear players</button>
 </div>
